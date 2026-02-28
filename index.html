@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstroVeda AI | Ramayan Divine Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --saffron: #FF9933; --gold: #FFD700; --deep-maroon: #4a0404; }
+        body { 
+            background: #1a0500;
+            background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), 
+                              url('https://images.unsplash.com/photo-1610116303244-6239f803fd51?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover; background-attachment: fixed;
+            color: #fff; font-family: 'Kalam', cursive;
+        }
+        .mystic-font { font-family: 'Cinzel', serif; }
+        
+        /* Input Fixes */
+        .input-field {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 2px solid var(--saffron) !important;
+            color: var(--gold) !important;
+            padding: 15px !important;
+            border-radius: 15px !important;
+            width: 100%;
+            font-size: 1rem;
+            outline: none;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.6) sepia(1) saturate(5) hue-rotate(10deg);
+            cursor: pointer; transform: scale(1.3);
+        }
+
+        .mandala-card {
+            background: rgba(30, 10, 5, 0.9);
+            border: 4px double var(--saffron);
+            box-shadow: 0 0 50px rgba(255, 153, 51, 0.2);
+            border-radius: 30px;
+        }
+
+        .om-btn {
+            background: linear-gradient(45deg, #cc5500, #ff9933);
+            box-shadow: 0 4px 15px rgba(204, 85, 0, 0.4);
+            transition: 0.3s;
+        }
+        .om-btn:hover { transform: scale(1.02); box-shadow: 0 0 25px var(--saffron); }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-10 flex flex-col items-center">
+
+    <header class="text-center mb-10">
+        <h1 class="mystic-font text-5xl md:text-7xl text-orange-500 drop-shadow-2xl">ASTROVEDA</h1>
+        <p class="text-orange-200 tracking-[0.3em] uppercase text-sm mt-2">Jaya Shree Ram • Divine AI Oracle</p>
+    </header>
+
+    <div class="max-w-4xl w-full mandala-card p-6 md:p-10 mb-10">
+        <h2 class="mystic-font text-2xl text-center text-orange-400 mb-8 tracking-widest uppercase">Sacred Input</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="text-xs text-orange-300 font-bold uppercase ml-2">Full Name</label>
+                <input type="text" id="name" placeholder="eg. Arjun" class="input-field mt-1">
+            </div>
+            <div>
+                <label class="text-xs text-orange-300 font-bold uppercase ml-2">Date of Birth</label>
+                <input type="date" id="dob" class="input-field mt-1">
+            </div>
+            <div>
+                <label class="text-xs text-orange-300 font-bold uppercase ml-2">Time of Birth</label>
+                <input type="time" id="tob" class="input-field mt-1">
+            </div>
+            <div>
+                <label class="text-xs text-orange-300 font-bold uppercase ml-2">Birth City</label>
+                <input type="text" id="pob" placeholder="eg. Ayodhya" class="input-field mt-1">
+            </div>
+        </div>
+
+        <button onclick="getReading()" id="mainBtn" class="om-btn w-full mt-10 py-5 text-white font-bold rounded-2xl uppercase tracking-[0.4em] text-xl">
+            Seek Divine Wisdom
+        </button>
+    </div>
+
+    <div id="resultBox" class="max-w-4xl w-full mandala-card p-8 md:p-12 hidden mb-20 animate-fade-in">
+        <div id="loader" class="text-center py-10 hidden">
+            <div class="animate-bounce text-5xl mb-4">🪔</div>
+            <p class="mystic-font text-orange-300 italic">Reading the Akasha...</p>
+        </div>
+        <div id="aiContent" class="text-orange-50 text-xl leading-relaxed space-y-6">
+            </div>
+    </div>
+
+    <audio id="bellSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-01.mp3"></audio>
+
+    <script>
+        async function getReading() {
+            const btn = document.getElementById('mainBtn');
+            const box = document.getElementById('resultBox');
+            const content = document.getElementById('aiContent');
+            const loader = document.getElementById('loader');
+            const bell = document.getElementById('bellSound');
+
+            const payload = {
+                name: document.getElementById('name').value,
+                dob: document.getElementById('dob').value,
+                tob: document.getElementById('tob').value,
+                pob: document.getElementById('pob').value
+            };
+
+            if(!payload.name || !payload.dob || !payload.tob || !payload.pob) {
+                alert("Please fill all details, Noble Soul.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "ALIGNING STARS...";
+            box.classList.remove('hidden');
+            loader.classList.remove('hidden');
+            content.innerHTML = "";
+
+            try {
+                const res = await fetch('/api/astrology', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                
+                // Play Temple Bell Sound
+                bell.play();
+
+                if (result.data) {
+                    content.innerHTML = result.data.replace(/\n/g, '<br>');
+                }
+            } catch (e) {
+                content.innerHTML = "The connection to the heavens was lost. Verify your API Key.";
+            } finally {
+                loader.classList.add('hidden');
+                btn.disabled = false;
+                btn.innerText = "Seek Divine Wisdom";
+                box.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
+</body>
+</html>
